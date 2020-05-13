@@ -194,6 +194,16 @@ def print_input_object(type_: GraphQLInputObjectType) -> str:
     return print_description(type_) + f"input {type_.name}" + print_block(fields)
 
 
+def print_field_directives(field: GraphQLField) -> str:
+    if not field.ast_node or not field.ast_node.directives:
+        return ""
+    directives = []
+    for directive in field.ast_node.directives:
+        argument = [f"{arg.name}: {arg.value}" for arg in directive.arguments]
+        directives.append(f" @{directive.name}: ({', '.join(argument)})")
+    return "".join(directives)
+
+
 def print_fields(type_: Union[GraphQLObjectType, GraphQLInterfaceType]) -> str:
     fields = [
         print_description(field, "  ", not i)
@@ -201,6 +211,7 @@ def print_fields(type_: Union[GraphQLObjectType, GraphQLInterfaceType]) -> str:
         + print_args(field.args, "  ")
         + f": {field.type}"
         + print_deprecated(field)
+        + print_field_directives(field)
         for i, (name, field) in enumerate(type_.fields.items())
     ]
     return print_block(fields)
